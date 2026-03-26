@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="no" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defigo - Partner Design Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Poppins', 'sans-serif'], 
+                        outfit: ['Poppins', 'sans-serif'],
+                        inter: ['Poppins', 'sans-serif']
+                    },
+                    colors: {
+                        emerald: {
+                            50: '#effbf3',
+                            100: '#d7f6e1',
+                            200: '#b2edc7',
+                            300: '#80dea1',
+                            400: '#5CD67A', // Defigo Green
+                            500: '#5CD67A', // Defigo Green
+                            600: '#3eb85d',
+                            700: '#32924b',
+                            800: '#2c743e',
+                            900: '#255f34',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #EDF0FC; color: #00134D; }
+        
+        /* Canvas & Topology Styles */
+        .canvas-bg {
+            background-color: #030617; /* Defigo Dark Mode */
+            background-image: radial-gradient(rgba(168, 192, 240, 0.15) 1px, transparent 1px); /* A8C0F0 */
+            background-size: 20px 20px;
+        }
+        
+        .node-enter { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .wireless-line { stroke-dasharray: 4 6; animation: dashWireless 1s linear infinite; }
+        @keyframes dashWireless { to { stroke-dashoffset: -10; } }
+
+        /* Funnel Visibility */
+        .funnel-step { display: none !important; opacity: 0; }
+        .funnel-step.active.step-block { display: block !important; opacity: 1; animation: fadeIn 0.4s ease forwards; }
+        .funnel-step.active.step-flex { display: flex !important; opacity: 1; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar for sidebar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #A8C0F0; border-radius: 4px; }
+
+        /* Hide scrollbar for category selector */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        select option { background-color: #00134D; color: #fff; }
+    </style>
+</head>
+<body class="font-sans antialiased h-screen flex flex-col overflow-hidden bg-[#EDF0FC]">
+
+    <!-- HARDWARE INFO MODAL -->
+    <div id="hardware-modal" class="hidden fixed inset-0 z-[100] bg-[#00134D]/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-[3rem] max-w-2xl w-full p-8 md:p-12 relative shadow-2xl animate-in zoom-in-95 border border-[#A8C0F0]/50 max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleHardwareInfo()" class="absolute top-6 right-6 text-gray-400 hover:text-[#00134D] bg-[#EDF0FC] p-2 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-outfit text-3xl font-black mb-8 text-[#00134D]">Teknisk referanse</h3>
+            <div class="space-y-8">
+                <!-- Defigo Native -->
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-[#00134D] rounded-2xl flex items-center justify-center shrink-0 shadow-lg"><i data-lucide="smartphone" class="text-white w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Display Unit (Defigo)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">10.1" berøringsskjerm (500 nits) i UV-beskyttet Makrolon-plast. Innebygd 1080p vidvinkelkamera (130°), IP44-klassifisering samt innebygd RFID-leser. Får strøm og data direkte via PoE+ fra Relay Hub. Driftstemperatur -20 °C til +50 °C.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="cpu" class="text-[#5CD67A] w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Relay Hub (Sentral)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">Hjernen i det native systemet. Plasseres i sikker sone. Kobles til via 4G eller kablet LAN (CAT6). Drives med 230V. Utstyrt med 3 reléutganger (12V/24V/Potensialfri) for opptil 3 dørmiljøer, samt 1 inngang.</p>
+                    </div>
+                </div>
+                <!-- Suprema Integration -->
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-[#EDF0FC] border border-[#A8C0F0]/50 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="credit-card" class="text-[#00134D] w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Smart Reader (Suprema Xpass2)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">IP65/IP67- og IK08-klassifisert. Strømforsynes via PoE eller 12V/24V DC. Har offline-støtte og innebygd dørrelé. Tilgjengelig i Slim (Mullion), Standard (Gangbox) og PIN-utførelse. Kommuniserer direkte med skyen via standard Ethernet-switch.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <div class="w-14 h-14 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="lock" class="text-red-500 w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Secure I/O Modul</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">Brukes til skallsikring for Smart Readers (Suprema). Kobles til leserens RS-485-inngang og plasseres i sikker sone for å forhindre manipulasjon av sluttstykke fra utsiden. Krever separat strømforsyning.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-[#A8C0F0]/50 h-20 flex-shrink-0 flex items-center justify-between px-6 z-50 relative">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#00134D] rounded-xl flex items-center justify-center shadow-lg"><i data-lucide="shield" class="text-white w-5 h-5"></i></div>
+                <span class="font-outfit font-bold text-xl tracking-widest uppercase text-[#00134D] hidden sm:block">Defigo</span>
+            </div>
+            <div class="h-8 w-px bg-[#EDF0FC] hidden sm:block"></div>
+            <span class="font-outfit font-semibold text-gray-500 tracking-wider text-sm uppercase">Partner Design Center</span>
+        </div>
+        
+        <!-- Step Indicators -->
+        <div class="hidden md:flex items-center gap-3 xl:gap-4">
+            <div class="flex items-center gap-2" id="nav-step-0"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">1</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Prosjekt</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-1"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">2</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Design</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-2"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">3</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Tilvalg</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-3"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">4</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Oppsummering</span></div>
+        </div>
+
+        <button onclick="location.reload()" class="text-xs font-outfit font-bold text-gray-500 hover:text-[#FF7366] transition uppercase tracking-widest flex items-center gap-2">
+            Avbryt <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </header>
+
+    <!-- MAIN APP LAYOUT -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- LEFT/CENTER: WORKSPACE -->
+        <main id="main-scroll-area" class="flex-1 flex flex-col relative bg-[#EDF0FC] h-full overflow-y-auto z-0">
+            
+            <!-- STEP 0: Project Details -->
+            <div id="step-0" class="funnel-step step-block active w-full max-w-5xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-16">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Prosjektinformasjon</h2>
+                    <p class="text-[#00134D]/70 text-lg">Beskriv eiendommen for å optimalisere systemdesignet.</p>
+                </div>
+                
+                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-transparent">
+                    
+                    <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-6">1. Eiendomstype <span class="text-[#FF7366]">*</span></h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
+                        <button onclick="setBuildingType('Bolig')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Bolig"><i data-lucide="home" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Bolig</span></button>
+                        <button onclick="setBuildingType('Kontor')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Kontor"><i data-lucide="briefcase" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Kontor</span></button>
+                        <button onclick="setBuildingType('Co-working')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Co-working"><i data-lucide="users" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Co-working</span></button>
+                        <button onclick="setBuildingType('Studenthjem')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Studenthjem"><i data-lucide="graduation-cap" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Studenthjem</span></button>
+                        <button onclick="setBuildingType('Kombinasjonsbygg')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Kombinasjonsbygg"><i data-lucide="building-2" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Kombinasjonsbygg</span></button>
+                        <button onclick="setBuildingType('Logistikk')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Logistikk"><i data-lucide="truck" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Logistikk</span></button>
+                        <button onclick="setBuildingType('Industri')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Industri"><i data-lucide="factory" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Industri</span></button>
+                        <button onclick="setBuildingType('Hotell')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Hotell"><i data-lucide="hotel" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Hotell</span></button>
+                        <button onclick="setBuildingType('Handel')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Handel"><i data-lucide="shopping-bag" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Handel</span></button>
+                        <button onclick="setBuildingType('Annet')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Annet"><i data-lucide="layout-grid" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Annet</span></button>
+                    </div>
+
+                    <!-- 2. Antal Lägenheter/Hyresgäster (Visas dynamiskt) -->
+                    <div id="tenant-container" class="hidden mt-8 pt-8 border-t border-gray-100 animate-in fade-in slide-in-from-top-4">
+                        <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-4">2. <span id="tenant-title">Antall enheter</span> <span class="text-[#FF7366]">*</span></h3>
+                        <div class="relative w-full md:w-1/2">
+                            <input type="number" id="tenant-input" min="1" oninput="state.tenantCount = parseInt(this.value) || 0; renderBOM();" placeholder="0" class="w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-2xl font-bold transition-colors text-[#00134D]">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Kreves for å generere et nøyaktig estimat for Defigo Flex (sluttkundelisenser) og for kostnad per bruker.</p>
+                    </div>
+
+                    <!-- 3. Projekttyp -->
+                    <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-6 border-t border-gray-100 pt-8 mt-8">3. Prosjekttype <span class="text-[#FF7366]">*</span></h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <label class="flex items-center gap-4 p-5 border-2 border-[#EDF0FC] rounded-2xl cursor-pointer hover:border-[#A8C0F0] transition-colors has-[:checked]:border-[#5CD67A] has-[:checked]:bg-emerald-50 relative group">
+                            <input type="radio" name="project_status" value="Nybyggprosjekt" class="w-5 h-5 text-[#5CD67A]" onchange="setProjectStatus('Nybyggprosjekt')">
+                            <div class="flex-1"><p class="font-bold font-outfit text-[#00134D]">Nybyggprosjekt</p><p class="text-xs text-gray-500 mt-1">Helt ny infrastruktur tegnes inn.</p></div>
+                        </label>
+                        <label class="flex items-center gap-4 p-5 border-2 border-[#EDF0FC] rounded-2xl cursor-pointer hover:border-[#A8C0F0] transition-colors has-[:checked]:border-[#5CD67A] has-[:checked]:bg-emerald-50 relative group">
+                            <input type="radio" name="project_status" value="Rehabiliteringsprosjekt" class="w-5 h-5 text-[#5CD67A]" onchange="setProjectStatus('Rehabiliteringsprosjekt')">
+                            <div class="flex-1"><p class="font-bold font-outfit text-[#00134D]">Rehabiliteringsprosjekt</p><p class="text-xs text-gray-500 mt-1">Utskifting av eksisterende system.</p></div>
+                        </label>
+                    </div>
+
+                    <!-- Validation Error -->
+                    <div id="step0-error-box" class="hidden bg-[#FF7366]/10 border border-[#FF7366]/30 text-[#FF7366] px-6 py-4 rounded-2xl items-center gap-3 mt-8">
+                        <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+                        <p class="text-sm font-bold" id="step0-error-text"></p>
+                    </div>
+
+                    <div class="mt-12 flex justify-end">
+                        <button onclick="checkStep0AndProceed()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-outfit font-bold text-lg hover:opacity-90 transition shadow-[0_10px_30px_rgba(255,142,61,0.3)] flex items-center gap-2">Gå til Design <i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 1: VISUAL CANVAS -->
+            <div id="step-1" class="funnel-step step-flex flex-col flex-1 w-full canvas-bg relative">
+                
+                <!-- Secure Zone Graphic Indicator -->
+                <div class="absolute top-0 bottom-0 left-[45%] right-0 bg-[#5CD67A]/5 border-l-2 border-[#5CD67A]/30 border-dashed z-0">
+                    <div class="absolute top-4 left-4 flex items-center gap-2 group cursor-help z-20">
+                        <div class="text-[#5CD67A] font-outfit font-bold tracking-widest uppercase text-sm flex items-center gap-2 bg-[#00134D] px-3 py-1.5 rounded-full border border-[#A8C0F0]/50 shadow-lg">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Sikker sone (Innendørs)
+                            <i data-lucide="info" class="w-4 h-4 text-[#5CD67A]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Facts Button -->
+                <div class="absolute top-4 left-4 z-30 hidden sm:block">
+                    <button onclick="toggleHardwareInfo()" class="bg-[#00134D]/80 hover:bg-[#00134D] text-white border border-[#A8C0F0]/50 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> Teknisk referanse
+                    </button>
+                </div>
+
+                <!-- Nodes Container Wrapper -->
+                <div class="relative z-10 w-full max-w-6xl mx-auto flex-1 flex flex-col gap-8 p-8 pb-32" id="container-ref">
+                    <div id="empty-state" class="m-auto text-center pt-20">
+                        <div class="w-24 h-24 bg-[#00134D]/50 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="mouse-pointer-click" class="w-10 h-10 text-[#5CD67A]"></i></div>
+                        <h3 class="font-outfit text-2xl font-bold text-white mb-2">Konfigurer topologi</h3>
+                        <p class="text-[#A8C0F0]">Legg til Defigo-enheter og lesere nedenfor.</p>
+                    </div>
+                    <div id="topology-container" class="w-full flex flex-col gap-12 mt-10 relative"></div>
+                </div>
+
+                <!-- TOOLBOX (Sticky Floating Action Menu) -->
+                <div class="sticky bottom-32 md:bottom-10 z-40 flex flex-col items-center w-full pointer-events-none pb-6">
+                    <div class="pointer-events-auto flex flex-col items-center relative">
+                        <div id="fab-menu" class="hidden mb-4 bg-white/95 backdrop-blur-xl border border-[#A8C0F0]/50 shadow-2xl rounded-[2rem] p-4 transition-all duration-300 origin-bottom transform scale-95 opacity-0 w-[95vw] md:w-auto overflow-x-auto no-scrollbar">
+                            
+                            <div class="flex gap-2 sm:gap-4 text-[#00134D] min-w-max">
+                                <!-- Defigo Native -->
+                                <div class="pr-4 border-r border-[#A8C0F0]/30 flex gap-2 sm:gap-4">
+                                    <button onclick="addNode('main', 'Display Unit')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-[#00134D] text-white rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Display<br/>Unit</span>
+                                    </button>
+                                    <button onclick="addNode('side', 'Mobil tilgang (Kun)')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-[#EDF0FC] text-[#00134D] border border-[#A8C0F0]/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><i data-lucide="smartphone-nfc" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Mobil<br/>tilgang</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Suprema Readers -->
+                                <div class="flex gap-2 sm:gap-4 pl-2">
+                                    <button onclick="addNode('sr_slim', 'Leser Slim')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="rectangle-vertical" class="w-5 h-5"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Leser<br/>Slim</span>
+                                    </button>
+                                    <button onclick="addNode('sr_std', 'Leser Std')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="credit-card" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Leser<br/>Standard</span>
+                                    </button>
+                                    <button onclick="addNode('sr_pin', 'Leser m/PIN')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="layout-grid" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Leser<br/>m/PIN</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleFab()" id="fab-btn" class="bg-[#FF8E3D] text-[#00134D] px-8 py-4 rounded-full font-outfit font-bold text-lg shadow-[0_15px_40px_rgba(255,142,61,0.4)] hover:bg-[#e67d32] transition-all duration-300 flex items-center gap-3">
+                            <i data-lucide="plus" id="fab-icon" class="w-6 h-6 transition-transform duration-300"></i> Legg til produkter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: TILLVAL & NÄTVERK -->
+            <div id="step-2" class="funnel-step step-block w-full max-w-5xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-12">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Tilvalg & Nettverk</h2>
+                </div>
+                
+                <!-- 1. INTERNETT -->
+                <div class="mb-12">
+                    <h3 class="font-outfit text-2xl font-extrabold mb-6 text-[#00134D]">1. Internett-tilkobling (Defigo Hub)</h3>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <button onclick="setNetwork('wired')" id="btn-net-wired" class="p-8 rounded-[2.5rem] border-4 border-[#00134D] shadow-xl text-left transition-all bg-white relative">
+                            <div class="mb-4 text-[#00134D]"><i data-lucide="cable" class="w-8 h-8"></i></div>
+                            <h4 class="font-outfit font-extrabold text-xl mb-2 text-[#00134D]">Kundens bygningsnettverk</h4>
+                            <p class="text-gray-500 font-light mb-4 text-sm">Systemet kobles til via lokal brannmur. Krever nettverkskonfigurasjon fra IT.</p>
+                            <span class="bg-[#EDF0FC] text-[#00134D] px-3 py-1.5 rounded-full font-bold text-sm border border-[#A8C0F0]">Ingen ekstra løpende avgift</span>
+                        </button>
+                        
+                        <button onclick="setNetwork('4g')" id="btn-net-4g" class="p-8 rounded-[2.5rem] border-4 border-transparent hover:bg-white bg-white/60 text-left transition-all relative">
+                            <div class="absolute top-4 right-4 bg-emerald-100 text-[#5CD67A] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Enklest installasjon</div>
+                            <div class="mb-4 text-gray-400" id="icon-net-4g"><i data-lucide="radio-tower" class="w-8 h-8"></i></div>
+                            <h4 class="font-outfit font-extrabold text-xl mb-2 text-[#00134D]">Defigo 4G / LTE</h4>
+                            <p class="text-gray-500 font-light mb-4 text-sm">Isolert fra kundens IT-miljø. Innebygd eSIM, driftsettes direkte fra esken.</p>
+                            <span class="bg-emerald-50 text-[#5CD67A] px-3 py-1.5 rounded-full font-bold text-sm" id="price-label-4g">+250 kr/mnd pr. Defigo Hub</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-4 px-2 italic">* For frittstående Suprema-lesere opprettes nettverkstopologi automatisk med modem/switcher.</p>
+                </div>
+
+                <!-- 2. TILBEHØR -->
+                <div class="mb-12">
+                    <h3 class="font-outfit text-2xl font-extrabold mb-6 text-[#00134D]">2. Tilbehør</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="scan" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Innfellingsboks</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">For Defigo Display</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-inWall">3 190 kr/stk</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('inWall', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <span id="val-addon-inWall" class="font-outfit font-bold flex-1 text-center text-[#00134D]">0</span>
+                                <button onclick="updateAddon('inWall', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="shield-alert" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">SecuFrame</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">For Defigo Display</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-secuFrame">2 550 kr/stk</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('secuFrame', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <span id="val-addon-secuFrame" class="font-outfit font-bold flex-1 text-center text-[#00134D]">0</span>
+                                <button onclick="updateAddon('secuFrame', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="monitor" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Svarapparat</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">Fysisk skjerm (Innendørs)</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-intercom">3 190 kr/stk</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('intercom', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <span id="val-addon-intercom" class="font-outfit font-bold flex-1 text-center text-[#00134D]">0</span>
+                                <button onclick="updateAddon('intercom', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="nfc" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Nøkkelbrikker</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">10-pakning (Mifare)</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-keyfobs">390 kr/stk</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('keyfobs', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <span id="val-addon-keyfobs" class="font-outfit font-bold flex-1 text-center text-[#00134D]">0</span>
+                                <button onclick="updateAddon('keyfobs', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. TJENESTEPAKKER (FLEX/CORE) -->
+                <div>
+                    <div class="flex justify-between items-end mb-6">
+                        <h3 class="font-outfit text-2xl font-extrabold text-[#00134D]">3. Tjenestepakker (Programvare)</h3>
+                        <span id="flex-badge-core" class="bg-[#5CD67A]/20 text-[#255f34] text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#5CD67A]/30">Alt inkludert i Core</span>
+                        <span id="flex-badge-flex" class="bg-[#FF8E3D]/20 text-[#e67d32] text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#FF8E3D]/30 hidden">Valgfritt i Flex</span>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+                        <!-- Access & Intercom -->
+                        <button onclick="toggleFlexAddon('access')" id="btn-flex-access" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                                <div id="icon-check-access" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Access & Intercom</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Videoanrop til app og mobil adgang via Defigo-appen.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-access-price">-</span>
+                            </div>
+                        </button>
+
+                        <!-- Security Services -->
+                        <button onclick="toggleFlexAddon('security')" id="btn-flex-security" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="shield" class="w-6 h-6"></i></div>
+                                <div id="icon-check-security" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Security Services</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Sanntidslogger og faste åpningstider for dører.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-security-price">149 kr /dør</span>
+                            </div>
+                        </button>
+
+                        <!-- Administration & Control -->
+                        <button onclick="toggleFlexAddon('admin')" id="btn-flex-admin" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="settings" class="w-6 h-6"></i></div>
+                                <div id="icon-check-admin" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Admin & Control</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Lokale administratorer og automatisk døråpning.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-admin-price">99 kr /dør</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-12 flex justify-between items-center max-w-lg mx-auto">
+                    <button onclick="prevStep()" class="text-gray-500 font-bold hover:text-[#FF7366] uppercase text-sm tracking-widest flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Tilbake</button>
+                    <button onclick="nextStep()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-outfit font-bold text-lg hover:opacity-90 transition shadow-lg flex items-center gap-2">Gå til Oppsummering <i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Checkout -->
+            <div id="step-3" class="funnel-step step-block w-full max-w-3xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-12">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Send til Defigo for tilbud</h2>
+                    <p class="text-gray-500 text-lg">Send inn ditt foreløpige design til oss for å bekrefte topologi og dine partnerrabatter.</p>
+                </div>
+                
+                <div class="bg-white p-8 md:p-14 rounded-[3rem] shadow-2xl border border-transparent relative">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Installatør / Partner <span class="text-[#FF7366]">*</span></label>
+                            <input type="text" id="contact-company" placeholder="Firmanavn" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                        </div>
+                        <div>
+                            <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Kontaktperson <span class="text-[#FF7366]">*</span></label>
+                            <input type="text" id="contact-name" placeholder="Fornavn og etternavn" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">E-post <span class="text-[#FF7366]">*</span></label>
+                                <input type="email" id="contact-email" placeholder="E-postadresse" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Telefon <span class="text-[#FF7366]">*</span></label>
+                                <input type="tel" id="contact-phone" placeholder="Telefonnummer" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Sluttkunde / Prosjektnavn <span class="text-[#FF7366]">*</span></label>
+                            <input type="text" id="contact-project" placeholder="F.eks. Borettslag Linden, prosjektnummer" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                        </div>
+                        
+                        <!-- Validation Error -->
+                        <div id="form-error-box" class="hidden bg-[#FF7366]/10 border border-[#FF7366]/30 text-[#FF7366] px-6 py-4 rounded-2xl items-center gap-3 mt-4">
+                            <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+                            <p class="text-sm font-bold" id="form-error-text"></p>
+                        </div>
+
+                        <button onclick="handleCheckout()" class="w-full mt-8 bg-[#FF8E3D] text-[#00134D] py-6 rounded-[2rem] font-outfit font-bold text-xl hover:opacity-90 transition shadow-[0_10px_30px_rgba(255,142,61,0.3)]">
+                            Send inn design
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-12 flex justify-center"><button onclick="prevStep()" class="text-gray-500 font-bold hover:text-[#FF7366] uppercase text-sm tracking-widest transition-colors"><i data-lucide="arrow-left" class="inline w-4 h-4 mr-2"></i> Endre tilvalg</button></div>
+            </div>
+
+            <!-- STEP 4: Thank You Page / Receipt -->
+            <div id="step-4" class="funnel-step step-block w-full max-w-4xl m-auto py-12 px-6">
+                <div class="bg-white p-12 rounded-[3rem] shadow-2xl text-center border border-transparent">
+                    <div class="w-20 h-20 bg-emerald-50 text-[#5CD67A] rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100">
+                        <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="font-outfit text-5xl font-black mb-4 text-[#00134D]">Design sendt!</h2>
+                    <p class="text-xl text-gray-500 mb-12 max-w-xl mx-auto">Vårt salgsteam mottar ditt underlag og kommer tilbake med et bekreftet partnertilbud (inkl. eventuelle installasjonsmoduler) til oppgitt e-post.</p>
+                    
+                    <!-- Kvitto -->
+                    <div class="bg-[#EDF0FC] rounded-[2rem] border border-[#A8C0F0]/50 p-8 mb-10 text-left">
+                        <h3 class="font-outfit text-lg font-bold text-[#00134D]/60 uppercase tracking-widest mb-6 border-b border-[#A8C0F0]/30 pb-4 flex justify-between items-center">
+                            <span>Partneroppsummering</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded border border-[#A8C0F0]/50 text-[#00134D]">Ekskl. mva</span>
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-8 font-inter text-sm">
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="block text-gray-500 font-bold mb-1">Partner & Prosjekt</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-company">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1">Ref: <span id="receipt-project">-</span></p>
+                                </div>
+                                <div class="pt-2">
+                                    <span class="block text-gray-500 font-bold mb-1">Kategori</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-btype">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1" id="receipt-pstatus">-</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="block text-gray-500 font-bold mb-1">Valgt prismodell</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-model">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1">Enheter: <span id="receipt-tenants">0</span> stk</p>
+                                </div>
+                                <div class="pt-4 border-t border-[#A8C0F0]/30 md:pt-0 md:border-t-0">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <span class="text-gray-500 font-bold">Maskinvare (Veiledende)</span>
+                                        <span class="font-outfit font-black text-lg text-[#00134D]" id="receipt-capex">-</span>
+                                    </div>
+                                    <div class="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <span class="text-emerald-900 font-bold flex items-center gap-2 mt-1"><i data-lucide="cloud" class="w-4 h-4 text-[#5CD67A]"></i> Access & Video (Sluttkunde)</span>
+                                            <div class="text-right">
+                                                <span class="font-outfit font-bold text-[#5CD67A] text-lg block leading-none" id="receipt-license">-</span>
+                                                <span id="receipt-per-unit-cost" class="text-[10px] text-emerald-700/80 font-medium hidden mt-1"></span>
+                                            </div>
+                                        </div>
+                                        <div id="receipt-license-breakdown" class="mt-3 pt-3 border-t border-emerald-200/60 space-y-1.5 hidden">
+                                            <!-- Fylls i dynamiskt med JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-6 italic" id="receipt-flex-disclaimer" style="display:none;">
+                            * Merk: Systemet estimeres med Flex Start (0 kr). Ekstra tjenestelag som Video Access og Security Services kjøpes separat av sluttkunde.
+                        </p>
+                    </div>
+
+                    <button onclick="location.reload()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-bold font-outfit shadow-lg flex items-center justify-center gap-2 mx-auto hover:opacity-90 transition">
+                        Start nytt design <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- RIGHT SIDEBAR: LIVE BOM -->
+        <aside id="bom-sidebar" class="w-96 bg-white border-l border-[#A8C0F0]/30 flex flex-col transform transition-transform duration-500 z-40 translate-x-full lg:translate-x-0 absolute lg:relative right-0 h-full shadow-2xl lg:shadow-none shrink-0">
+            <div class="p-8 border-b border-[#A8C0F0]/30 bg-[#EDF0FC] flex justify-between items-center">
+                <h3 class="font-outfit font-extrabold text-2xl text-[#00134D]">Ditt Design</h3>
+                <button onclick="toggleMobileBOM()" class="lg:hidden text-gray-400 hover:text-[#00134D] absolute top-8 right-6"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-8 space-y-6">
+                <!-- PRICING MODEL TOGGLE -->
+                <div class="bg-[#0A1226] p-1.5 rounded-full flex relative shadow-inner">
+                    <div id="toggle-bg" class="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#FF8E3D] rounded-full transition-all duration-300 left-1.5 shadow-md"></div>
+                    <button onclick="setPricingModel('core')" id="btn-model-core" class="flex-1 relative z-10 py-2.5 text-xs uppercase tracking-widest font-bold text-[#00134D] transition-colors">Defigo Core</button>
+                    <button onclick="setPricingModel('flex')" id="btn-model-flex" class="flex-1 relative z-10 py-2.5 text-xs uppercase tracking-widest font-bold text-white transition-colors">Defigo Flex</button>
+                </div>
+
+                <div>
+                    <h4 class="font-outfit text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">Maskinvare & Lisenser</h4>
+                    <ul id="bom-list" class="space-y-3 font-inter text-sm font-medium text-[#00134D]">
+                        <!-- Fylls dynamiskt -->
+                    </ul>
+                </div>
+
+                <div class="bg-[#00134D] rounded-2xl p-5 text-white shadow-xl">
+                    <div class="flex items-center gap-2 mb-2 text-[#A8C0F0]">
+                        <div class="w-2 h-2 bg-[#5CD67A] rounded-full animate-pulse"></div>
+                        <span class="font-outfit text-sm font-bold uppercase tracking-wide">Systemkapasitet</span>
+                    </div>
+                    <p class="text-xs text-white/80 leading-relaxed mb-2"><span id="bom-free-relays" class="text-[#5CD67A] font-bold">0</span> ledige reléporter (Defigo Hub). Nettverksswitcher og I/O-moduler legges til automatisk.</p>
+                </div>
+            </div>
+
+            <div class="p-8 border-t border-[#A8C0F0]/30 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] relative z-50">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <span class="font-outfit text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] block mb-1">Maskinvare (Estimat)</span>
+                        <div class="flex items-end gap-2">
+                            <span class="text-3xl font-outfit font-black text-[#00134D]" id="bom-total-capex">0 kr</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative group cursor-pointer transition-colors hover:bg-emerald-100/50 mb-4">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2 text-emerald-900 font-bold text-sm mt-0.5">
+                            <i data-lucide="cloud" class="w-4 h-4 text-[#5CD67A]"></i>
+                            <span class="border-b border-dashed border-[#5CD67A]/50">Access & Video</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-outfit font-bold text-[#5CD67A] text-lg block leading-none" id="bom-total-license">0 kr/mnd</span>
+                            <span id="bom-per-unit-cost" class="text-[10px] text-emerald-700/80 font-medium hidden mt-1"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamisk specifikation av månadskostnaden -->
+                    <div id="bom-license-breakdown" class="mt-3 pt-3 border-t border-emerald-200/60 space-y-1.5 hidden">
+                        <!-- Fylls i dynamiskt med JS -->
+                    </div>
+                    
+                    <!-- Tooltip Hover box -->
+                    <div class="absolute bottom-full left-0 mb-3 w-[calc(100%+2rem)] -ml-4 bg-[#0A1226] text-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-[#1A243D] z-[100] transition-all duration-300 pointer-events-none opacity-0 translate-y-3 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible">
+                        <div id="tooltip-core-content" class="hidden">
+                            <p class="text-sm font-bold text-[#5CD67A] mb-3 font-outfit flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> I Core-lisensen inngår:</p>
+                            <ul class="text-xs space-y-2.5 text-gray-200 font-light">
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Ubegrenset antall app-brukere</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Gratis videosamtaler til mobil</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Sentral skyhåndtering & support</li>
+                            </ul>
+                        </div>
+                        <div id="tooltip-flex-content" class="hidden">
+                            <p class="text-sm font-bold text-[#5CD67A] mb-3 font-outfit flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> I Flex Start (0 kr) inngår:</p>
+                            <ul class="text-xs space-y-2.5 text-gray-200 font-light">
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Porttelefon med lyd (klar til bruk)</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Defigo WebAdmin for styret</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Skyoppdateringer & Support</li>
+                            </ul>
+                            <p class="text-[10px] text-[#A8C0F0] mt-3 pt-3 border-t border-[#1A243D]">* Tilleggstjenester (Video Access, Security, etc.) kjøpes separat av gårdeier eller sluttbruker.</p>
+                        </div>
+                        <div class="absolute -bottom-2 left-12 w-4 h-4 bg-[#0A1226] border-b border-r border-[#1A243D] transform rotate-45"></div>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-gray-400 mb-6 leading-relaxed font-inter">
+                    * Merk: Priser vises i henhold til <strong class="text-[#00134D]">Authorized Installer</strong>. Installasjonskostnader mot sluttkunde settes av dere som partner.
+                </p>
+                
+                <button id="btn-next-from-bom" onclick="handleBomNext()" class="w-full bg-[#FF8E3D] text-[#00134D] py-4 rounded-xl font-outfit font-bold text-lg hover:opacity-90 transition hidden shadow-lg flex items-center justify-center gap-2">
+                    Fortsett <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MOBILE BOTTOM BAR -->
+        <div id="mobile-bottom-bar" class="lg:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-[#A8C0F0]/50 flex flex-col z-[45] transition-transform duration-300 translate-y-full shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+            <div class="bg-[#EDF0FC] border-b border-[#A8C0F0]/50 px-6 py-2.5 flex justify-between items-center">
+                <span class="text-[10px] font-bold text-[#00134D]/60 uppercase tracking-widest">Prisvisning</span>
+                <span class="text-[10px] font-bold text-[#00134D] uppercase tracking-widest">Ekskl mva</span>
+            </div>
+            <div class="p-4 px-6 flex justify-between items-center">
+                <div onclick="toggleMobileBOM()" class="flex flex-col cursor-pointer hover:opacity-80">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1">Maskinvare <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+                    <span id="mobile-bar-price" class="font-outfit font-black text-2xl text-[#00134D]">0 kr</span>
+                </div>
+                <button id="mob-btn-next" onclick="handleBomNext()" class="bg-[#FF8E3D] text-[#00134D] px-8 py-3.5 rounded-xl font-outfit font-bold text-sm hover:opacity-90 shadow-md">
+                    Fortsett
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // ==========================================
+        // STATE & CONSTANTS (PARTNER PRICES)
+        // ==========================================
+        const PRICES = { 
+            core: { bundle: 21000, extraHub: 6300, saasBase: 490, saasExtraDoor: 69 },
+            flex: { bundle: 34349, extraHub: 10305, saasBase: 0 },
+            shared: {
+                inWall: 3190, secuFrame: 2550, intercom: 3190, keyfobs: 390,
+                srStandard: 4190, srPin: 6190, srSlim: 4190,
+                switch8: 2990, switch24: 6990, switch48: 13490,
+                ioModule: 2490, poeInjector: 490, modem: 1990,
+                saas4G: 250
+            }
+        };
+
+        let state = {
+            step: 0,
+            btype: null,
+            pstatus: null,
+            tenantCount: 0,
+            pricingModel: 'core', // 'core' or 'flex'
+            nodes: [], 
+            network: 'wired',
+            addons: { inWall: 0, secuFrame: 0, intercom: 0, keyfobs: 0 },
+            flexAddons: { access: false, security: false, admin: false },
+            contact: { company: '', name: '', email: '', phone: '', project: '' }
+        };
+
+        // Format Helper
+        function formatPrice(price) {
+            return new Intl.NumberFormat('no-NO').format(price);
+        }
+
+        function toggleHardwareInfo() {
+            const modal = document.getElementById('hardware-modal');
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function updateStaticPrices() {
+            if(document.getElementById('price-label-inWall')) document.getElementById('price-label-inWall').innerText = formatPrice(PRICES.shared.inWall) + ' kr/stk';
+            if(document.getElementById('price-label-secuFrame')) document.getElementById('price-label-secuFrame').innerText = formatPrice(PRICES.shared.secuFrame) + ' kr/stk';
+            if(document.getElementById('price-label-intercom')) document.getElementById('price-label-intercom').innerText = formatPrice(PRICES.shared.intercom) + ' kr/stk';
+            if(document.getElementById('price-label-keyfobs')) document.getElementById('price-label-keyfobs').innerText = formatPrice(PRICES.shared.keyfobs) + ' kr/stk';
+            if(document.getElementById('price-label-4g')) document.getElementById('price-label-4g').innerText = '+' + formatPrice(PRICES.shared.saas4G) + ' kr/mnd pr. Defigo Hub';
+        }
+
+        // ==========================================
+        // NAVIGATION & UI
+        // ==========================================
+        function setBuildingType(type) { 
+            state.btype = type; 
+            document.querySelectorAll('.btype-btn').forEach(btn => {
+                if(btn.dataset.type === type) {
+                    btn.classList.add('border-[#00134D]', 'shadow-md');
+                    btn.classList.remove('border-transparent');
+                } else {
+                    btn.classList.remove('border-[#00134D]', 'shadow-md');
+                    btn.classList.add('border-transparent');
+                }
+            });
+
+            // Handle tenant input display
+            const tc = document.getElementById('tenant-container');
+            const tt = document.getElementById('tenant-title');
+            tc.classList.remove('hidden');
+            
+            if (type === 'Bolig' || type === 'Studenthjem') tt.innerText = "Antall leiligheter";
+            else if (type === 'Kontor' || type === 'Co-working') tt.innerText = "Antall selskaper / kontorer";
+            else if (type === 'Hotell') tt.innerText = "Antall hotellrom";
+            else tt.innerText = "Antall leietakere / lokaler";
+            
+            renderBOM(); // Update to reflect unit text change
+        }
+        
+        function setProjectStatus(status) {
+            state.pstatus = status;
+        }
+
+        function setPricingModel(model) {
+            state.pricingModel = model;
+            const bg = document.getElementById('toggle-bg');
+            const btnCore = document.getElementById('btn-model-core');
+            const btnFlex = document.getElementById('btn-model-flex');
+
+            if (model === 'core') {
+                bg.style.left = '6px';
+                bg.style.transform = 'translateX(0)';
+                btnCore.classList.replace('text-[#A8C0F0]', 'text-[#00134D]');
+                btnFlex.classList.replace('text-[#00134D]', 'text-white');
+                btnFlex.classList.replace('text-[#A8C0F0]', 'text-white');
+            } else {
+                bg.style.left = '6px';
+                bg.style.transform = 'translateX(100%)';
+                btnCore.classList.replace('text-[#00134D]', 'text-white');
+                btnCore.classList.replace('text-[#A8C0F0]', 'text-white');
+                btnFlex.classList.replace('text-white', 'text-[#00134D]');
+                btnFlex.classList.replace('text-[#A8C0F0]', 'text-[#00134D]');
+            }
+            renderBOM();
+        }
+        
+        function toggleFlexAddon(type) {
+            if (state.pricingModel === 'core') return; // Låst om Core är valt
+            state.flexAddons[type] = !state.flexAddons[type];
+            renderBOM();
+        }
+
+        function checkStep0AndProceed() {
+            const errorBox = document.getElementById('step0-error-box');
+            const errorText = document.getElementById('step0-error-text');
+
+            if(!state.btype || !state.pstatus) {
+                if(errorText) errorText.innerText = "Vennligst velg både eiendomstype og prosjekttype før du går videre.";
+                if(errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            if(state.tenantCount <= 0) {
+                if(errorText) errorText.innerText = "Vennligst oppgi antall enheter (kan være et estimat).";
+                if(errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            
+            if(errorBox) { errorBox.classList.add('hidden'); errorBox.classList.remove('flex'); }
+            nextStep();
+        }
+
+        function handleBomNext() {
+            if (state.step === 3) {
+                handleCheckout();
+            } else {
+                nextStep();
+            }
+        }
+
+        function nextStep() {
+            if(state.step < 4) {
+                state.step++;
+                renderUI();
+                const scrollArea = document.getElementById('main-scroll-area');
+                if(scrollArea) scrollArea.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function prevStep() {
+            if(state.step > 0) {
+                state.step--;
+                renderUI();
+                const scrollArea = document.getElementById('main-scroll-area');
+                if(scrollArea) scrollArea.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function toggleMobileBOM() {
+            const sidebar = document.getElementById('bom-sidebar');
+            if(sidebar) sidebar.classList.toggle('translate-x-full');
+        }
+
+        function setNetwork(type) {
+            state.network = type;
+            const btnWired = document.getElementById('btn-net-wired');
+            const btn4g = document.getElementById('btn-net-4g');
+            const icon4g = document.getElementById('icon-net-4g');
+            
+            btnWired.classList.replace('border-[#00134D]', 'border-transparent');
+            btnWired.classList.replace('bg-white', 'bg-white/60');
+            btn4g.classList.replace('border-emerald-500', 'border-transparent');
+            btn4g.classList.replace('bg-white', 'bg-white/60');
+            icon4g.classList.replace('text-emerald-500', 'text-gray-400');
+            
+            if(type === 'wired') {
+                btnWired.classList.replace('border-transparent', 'border-[#00134D]');
+                btnWired.classList.replace('bg-white/60', 'bg-white');
+            }
+            if(type === '4g') {
+                btn4g.classList.replace('border-transparent', 'border-emerald-500');
+                btn4g.classList.replace('bg-white/60', 'bg-white');
+                icon4g.classList.replace('text-gray-400', 'text-emerald-500');
+            }
+            renderBOM();
+        }
+
+        function updateAddon(type, change) {
+            const mainCount = state.nodes.filter(n => n.type === 'main').length;
+            let current = state.addons[type];
+            let next = Math.max(0, current + change);
+
+            if (type === 'inWall' || type === 'secuFrame') {
+                const otherType = type === 'inWall' ? 'secuFrame' : 'inWall';
+                if (next + state.addons[otherType] > mainCount) next = mainCount - state.addons[otherType];
+            }
+
+            state.addons[type] = next;
+            const addonSpan = document.getElementById(`val-addon-${type}`);
+            if (addonSpan) addonSpan.innerText = next;
+            renderBOM();
+        }
+
+        // ==========================================
+        // TOPOLOGY LOGIC
+        // ==========================================
+        function addNode(type, label) {
+            const id = Date.now() + Math.floor(Math.random() * 1000);
+            let env = type === 'main' ? 'Hovedinngang' : 'Indre dør';
+            state.nodes.push({ id, type, label, env, isolated: false });
+            if(document.getElementById('fab-menu')) document.getElementById('fab-menu').classList.add('hidden');
+            if(document.getElementById('fab-icon')) document.getElementById('fab-icon').classList.remove('rotate-45');
+            renderTopology();
+            updateStaticPrices();
+            renderBOM();
+        }
+
+        function removeNode(id) {
+            state.nodes = state.nodes.filter(n => n.id !== id);
+            const mainCount = state.nodes.filter(n => n.type === 'main').length;
+            if ((state.addons.inWall + state.addons.secuFrame) > mainCount) {
+                state.addons.inWall = Math.min(state.addons.inWall, mainCount);
+                state.addons.secuFrame = Math.min(state.addons.secuFrame, mainCount - state.addons.inWall);
+                const iwSpan = document.getElementById('val-addon-inWall');
+                const sfSpan = document.getElementById('val-addon-secuFrame');
+                if(iwSpan) iwSpan.innerText = state.addons.inWall;
+                if(sfSpan) sfSpan.innerText = state.addons.secuFrame;
+            }
+            renderTopology();
+            updateStaticPrices();
+            renderBOM();
+        }
+
+        function toggleIsolated(id) {
+            state.nodes = state.nodes.map(n => n.id === id ? { ...n, isolated: !n.isolated } : n);
+            renderTopology();
+            updateStaticPrices();
+            renderBOM();
+        }
+        
+        function updateNodeEnv(id, val) {
+            state.nodes = state.nodes.map(n => n.id === id ? { ...n, env: val } : n);
+        }
+
+        function renderTopology() {
+            const container = document.getElementById('topology-container');
+            const emptyState = document.getElementById('empty-state');
+            if(!container) return;
+
+            if(state.nodes.length === 0) {
+                container.innerHTML = '';
+                if(emptyState) emptyState.style.display = 'block';
+                return;
+            }
+            if(emptyState) emptyState.style.display = 'none';
+            container.innerHTML = '';
+
+            // Render Defigo Hubs (main, side)
+            let defigoNodes = state.nodes.filter(n => n.type === 'main' || n.type === 'side');
+            let hubGroups = [];
+            let mainNodes = defigoNodes.filter(n => n.type === 'main');
+            let sideNodes = [...defigoNodes.filter(n => n.type === 'side' && !n.isolated)];
+            let isolatedNodes = defigoNodes.filter(n => n.type === 'side' && n.isolated);
+
+            mainNodes.forEach(main => { hubGroups.push({ id: 'hub_' + main.id, type: 'included', doors: [main] }); });
+            hubGroups.forEach(hub => { while(hub.doors.length < 3 && sideNodes.length > 0) { hub.doors.push(sideNodes.shift()); } });
+            
+            while(sideNodes.length > 0) {
+                const hub = { id: 'hub_extra_' + Math.random(), type: 'extra', doors: [] };
+                while(hub.doors.length < 3 && sideNodes.length > 0) { hub.doors.push(sideNodes.shift()); }
+                hubGroups.push(hub);
+            }
+
+            isolatedNodes.forEach(iso => {
+                hubGroups.push({ id: 'hub_iso_' + iso.id, type: 'extra', isolated: true, doors: [iso] });
+            });
+
+            // Render Suprema Hubs (sr_slim, sr_std, sr_pin)
+            let supremaNodes = state.nodes.filter(n => n.type.startsWith('sr_'));
+            let srHubGroups = [];
+            
+            if(supremaNodes.length > 0) {
+                // Determine switch type for the visualizer
+                let switchTitle = "PoE-injektor";
+                if(supremaNodes.length > 1 && supremaNodes.length <= 7) switchTitle = "8-ports Switch";
+                else if (supremaNodes.length > 7 && supremaNodes.length <= 23) switchTitle = "24-ports Switch";
+                else if (supremaNodes.length > 23) switchTitle = "48-ports Switch";
+
+                let tempSr = [...supremaNodes];
+                while(tempSr.length > 0) {
+                    const hub = { id: 'sr_hub_' + Math.random(), type: 'suprema', isFirst: srHubGroups.length === 0, switchTitle: switchTitle, doors: [] };
+                    while(hub.doors.length < 4 && tempSr.length > 0) { hub.doors.push(tempSr.shift()); }
+                    srHubGroups.push(hub);
+                }
+            }
+
+            const allGroups = [...hubGroups, ...srHubGroups];
+            
+            // Standardiserade Badges
+            const rfidBadge = `<span class="bg-[#00134D] text-[#A8C0F0] text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-[#A8C0F0]/50 shadow-sm">RFID</span>`;
+            const mobilBadge = `<span class="bg-[#5CD67A]/20 text-[#5CD67A] text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-[#5CD67A]/50 shadow-sm">Mobil Access</span>`;
+
+            allGroups.forEach((hub) => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'node-enter relative w-full flex items-stretch justify-between z-10';
+
+                let doorsHTML = hub.doors.map((door) => {
+                    let isMain = door.type === 'main';
+                    let isSr = door.type.startsWith('sr_');
+                    
+                    let icon, bgColor, iconBg, iconColor, badges = '';
+                    
+                    if(isSr) {
+                        if(door.type === 'sr_slim') { icon = 'rectangle-vertical'; }
+                        else if(door.type === 'sr_pin') { icon = 'layout-grid'; }
+                        else { icon = 'credit-card'; }
+                        bgColor = 'bg-white text-[#00134D] border-[#5CD67A]/50 shadow-xl w-56';
+                        iconBg = 'bg-[#EDF0FC] border-[#5CD67A]/50';
+                        iconColor = 'text-[#5CD67A]';
+                        badges = `${rfidBadge}${mobilBadge}`;
+                    } else {
+                        icon = isMain ? 'smartphone' : 'smartphone-nfc';
+                        bgColor = isMain ? 'bg-[#00134D] text-white border-[#1A243D] shadow-2xl w-60' : 'bg-white text-[#00134D] border-[#A8C0F0]/50 shadow-xl w-56';
+                        iconBg = isMain ? 'bg-white/10 border-transparent' : 'bg-[#EDF0FC] border-transparent';
+                        iconColor = isMain ? 'text-[#5CD67A]' : 'text-[#00134D]';
+                        badges = isMain ? `${rfidBadge}${mobilBadge}` : `${mobilBadge}`;
+                    }
+
+                    let delBtn = `<button onclick="removeNode(${door.id})" class="absolute -top-3 -left-3 bg-[#FF7366] hover:opacity-80 text-white rounded-full p-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition hover:scale-110 z-50 shadow-lg"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>`;
+                    
+                    let isoBtn = ''; let isoBadge = '';
+                    if(!isMain) {
+                        if(door.isolated) {
+                            isoBtn = `<button onclick="toggleIsolated(${door.id})" class="absolute -top-3 left-6 bg-[#5CD67A] hover:opacity-80 border-transparent text-white shadow-[0_0_15px_rgba(92,214,122,0.5)] border rounded-full p-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition hover:scale-110 z-50" title="${isSr ? 'Fjern Secure I/O' : 'Koble til hovedhub på nytt'}"><i data-lucide="${isSr ? 'unlock' : 'link'}" class="w-3.5 h-3.5"></i></button>`;
+                            isoBadge = isSr 
+                                ? `<div class="absolute -bottom-3 right-4 bg-[#00134D] text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-50 border border-[#A8C0F0]/50 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3 h-3 text-[#5CD67A]"></i> Secure I/O</div>`
+                                : `<div class="absolute -bottom-3 right-4 bg-[#00134D] text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-50 border border-[#A8C0F0]/50 flex items-center gap-1.5"><i data-lucide="unlink" class="w-3 h-3 text-[#5CD67A]"></i> Separat Hub</div>`;
+                        } else {
+                            isoBtn = `<button onclick="toggleIsolated(${door.id})" class="absolute -top-3 left-6 bg-[#00134D] hover:bg-[#00134D]/80 border border-[#A8C0F0]/50 text-white shadow-lg rounded-full p-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition hover:scale-110 z-50" title="${isSr ? 'Legg til Secure I/O' : 'Isoler/Sikker sone'}"><i data-lucide="${isSr ? 'lock' : 'unlink'}" class="w-3.5 h-3.5"></i></button>`;
+                        }
+                    }
+                    
+                    // Environment Select Dropdown
+                    let envSelect = `
+                        <div class="relative w-full mb-1">
+                            <select onchange="updateNodeEnv(${door.id}, this.value)" class="w-full bg-transparent font-outfit font-bold text-sm leading-tight text-inherit outline-none cursor-pointer appearance-none pr-4 border-b border-dashed ${isMain ? 'border-[#5CD67A]/50' : 'border-[#00134D]/30'} pb-0.5">
+                                <option value="Hovedinngang" ${door.env === 'Hovedinngang' ? 'selected' : ''}>Hovedinngang</option>
+                                <option value="Sidedør" ${door.env === 'Sidedør' ? 'selected' : ''}>Sidedør</option>
+                                <option value="Garasje" ${door.env === 'Garasje' ? 'selected' : ''}>Garasje</option>
+                                <option value="Sykkelrom" ${door.env === 'Sykkelrom' ? 'selected' : ''}>Sykkelrom</option>
+                                <option value="Søppelrom" ${door.env === 'Søppelrom' ? 'selected' : ''}>Søppelrom</option>
+                                <option value="Indre dør" ${door.env === 'Indre dør' ? 'selected' : ''}>Indre dør</option>
+                                <option value="Annet" ${door.env === 'Annet' ? 'selected' : ''}>Annet</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 opacity-50 pointer-events-none"></i>
+                        </div>
+                    `;
+
+                    return `
+                        <div class="flex items-center justify-end w-full relative group ${isMain?'h-24':'h-24'}">
+                            <div class="${bgColor} p-3.5 rounded-2xl flex items-center gap-3 border relative z-20 transition-all">
+                                ${delBtn}${isoBtn}
+                                <div class="w-10 ${isMain?'h-14':'h-14'} ${iconBg} rounded-xl flex items-center justify-center shrink-0 border"><i data-lucide="${icon}" class="w-5 h-5 ${iconColor}"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    ${envSelect}
+                                    <p class="text-[10px] opacity-70 uppercase tracking-wider mb-1.5 truncate">${door.label}</p>
+                                    <div class="flex gap-1.5 flex-wrap">${badges}</div>
+                                </div>
+                                ${isoBadge}
+                            </div>
+                            <div class="w-8 h-[2px] bg-[#5CD67A]/60 z-10 relative"></div>
+                        </div>`;
+                }).join('');
+
+                let spineHTML = hub.doors.length > 1 ? `<div class="absolute right-0 top-10 bottom-10 w-[2px] bg-[#5CD67A]/60 z-0"></div>` : '';
+                
+                // Right side controller (Defigo Hub vs Suprema Switch)
+                let controllerHTML = '';
+                if(hub.type === 'suprema') {
+                    let modemHtml = hub.isFirst ? `
+                        <div class="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                            <div class="bg-[#00134D] text-white px-3 py-1.5 rounded-xl border border-[#A8C0F0]/30 flex items-center gap-2 shadow-lg z-20">
+                                <i data-lucide="radio" class="w-4 h-4 text-[#A8C0F0]"></i><span class="text-[10px] font-bold uppercase tracking-widest">Modem</span>
+                            </div>
+                            <div class="h-4 w-[2px] bg-[#5CD67A]/60"></div>
+                        </div>` : '';
+
+                    controllerHTML = `
+                        <div class="bg-white text-[#00134D] p-4 rounded-2xl flex items-center gap-4 border border-[#A8C0F0]/50 w-56 shadow-xl relative shrink-0 z-10">
+                            ${modemHtml}
+                            <div class="w-12 h-12 bg-[#EDF0FC] rounded-xl flex items-center justify-center border border-[#A8C0F0]/50 shrink-0"><i data-lucide="network" class="w-6 h-6 text-[#00134D]"></i></div>
+                            <div><p class="font-outfit font-bold text-sm leading-tight">${hub.switchTitle}</p><p class="text-[10px] text-gray-500 mt-0.5">Drives via PoE</p></div>
+                        </div>
+                    `;
+                } else {
+                    let hubTitle = hub.type === 'included' ? 'Relay Hub' : 'Ekstra Relay Hub';
+                    let hubSub = hub.type === 'included' ? '(Defigo)' : hub.isolated ? '(Separat)' : 'Lagt til automatisk';
+                    controllerHTML = `
+                        <div class="bg-[#00134D] text-white p-4 rounded-2xl flex items-center gap-4 border border-[#A8C0F0]/30 w-56 backdrop-blur-md shadow-xl relative shrink-0 z-10">
+                            <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 shrink-0"><i data-lucide="cpu" class="w-6 h-6 text-[#5CD67A]"></i></div>
+                            <div><p class="font-outfit font-bold text-base leading-tight text-white">${hubTitle}</p><p class="text-[10px] text-[#A8C0F0] mt-0.5">${hubSub}</p></div>
+                        </div>
+                    `;
+                }
+
+                groupEl.innerHTML = `
+                    <div class="w-[45%] flex flex-col gap-4 justify-center relative pr-0 py-4">${spineHTML}${doorsHTML}</div>
+                    <div class="w-[10%] flex items-center justify-center relative z-0"><div class="w-full h-[2px] bg-[#5CD67A]/60"></div></div>
+                    <div class="w-[45%] pl-4 relative z-10 flex items-center">
+                        ${controllerHTML}
+                        <div class="flex-1 flex flex-col items-center justify-center relative px-2 opacity-80 min-w-[50px] h-full overflow-hidden">
+                            <svg width="100%" height="2" class="w-full absolute top-1/2 -translate-y-1/2"><line x1="0" y1="1" x2="100%" y2="1" stroke="#5CD67A" stroke-width="2" class="wireless-line"></line></svg>
+                        </div>
+                        <div class="cloud-icon-wrapper flex flex-col items-center justify-center text-white font-bold tracking-widest uppercase shrink-0 w-16 z-20 relative bg-[#00134D] py-3 rounded-2xl border border-[#A8C0F0]/30 shadow-lg">
+                            <i data-lucide="cloud" class="w-6 h-6 mb-1 animate-pulse text-[#5CD67A]"></i><span class="text-[9px]">Skyen</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(groupEl);
+            });
+            
+            if (allGroups.length > 1) {
+                const cloudSpine = document.createElement('div');
+                cloudSpine.className = 'absolute right-8 z-0 pointer-events-none transition-all duration-300';
+                cloudSpine.style.maskImage = 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)';
+                cloudSpine.style.WebkitMaskImage = 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)';
+                cloudSpine.innerHTML = `<svg width="2" height="100%" class="block"><line x1="1" y1="0" x2="1" y2="100%" stroke="#5CD67A" stroke-width="2" class="wireless-line"></line></svg>`;
+                container.appendChild(cloudSpine);
+
+                requestAnimationFrame(() => {
+                    const groups = container.querySelectorAll('.node-enter');
+                    if(groups.length > 1) {
+                        const firstCloud = groups[0].querySelector('.cloud-icon-wrapper');
+                        const lastCloud = groups[groups.length - 1].querySelector('.cloud-icon-wrapper');
+                        if(firstCloud && lastCloud) {
+                            const cRect = container.getBoundingClientRect();
+                            const fRect = firstCloud.getBoundingClientRect();
+                            const lRect = lastCloud.getBoundingClientRect();
+                            const firstCenter = (fRect.top - cRect.top) + (fRect.height / 2);
+                            const lastCenter = (lRect.top - cRect.top) + (lRect.height / 2);
+                            cloudSpine.style.top = firstCenter + 'px';
+                            cloudSpine.style.height = (lastCenter - firstCenter) + 'px';
+                        }
+                    }
+                });
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // CHECKOUT & BOM
+        // ==========================================
+        function handleCheckout() {
+            const errorBox = document.getElementById('form-error-box');
+            const errorText = document.getElementById('form-error-text');
+            
+            const companyInput = document.getElementById('contact-company');
+            const nameInput = document.getElementById('contact-name');
+            const emailInput = document.getElementById('contact-email');
+            const phoneInput = document.getElementById('contact-phone');
+            const projectInput = document.getElementById('contact-project');
+            
+            const company = companyInput ? companyInput.value : '';
+            const name = nameInput ? nameInput.value : '';
+            const email = emailInput ? emailInput.value : '';
+            const phone = phoneInput ? phoneInput.value : '';
+            const project = projectInput ? projectInput.value : '';
+            
+            if(!company || !name || !email || !phone || !project) {
+                if (errorText) errorText.innerText = 'Vennligst fyll ut alle obligatoriske felt for å sende inn underlaget.';
+                if (errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            
+            if (errorBox) { errorBox.classList.add('hidden'); errorBox.classList.remove('flex'); }
+            state.contact = { company, name, email, phone, project };
+            nextStep();
+        }
+
+        function renderBOM() {
+            let pModel = PRICES[state.pricingModel];
+            if (!pModel) {
+                state.pricingModel = 'core';
+                pModel = PRICES['core'];
+            }
+            const shared = PRICES.shared;
+            const isCore = state.pricingModel === 'core';
+
+            // Defigo Hubs & Doors
+            const mainCount = state.nodes.filter(n => n.type === 'main').length;
+            const defigoSideNodes = state.nodes.filter(n => n.type === 'side');
+            const standardSideCount = defigoSideNodes.filter(n => !n.isolated).length;
+            const isolatedCount = defigoSideNodes.filter(n => n.isolated).length;
+            
+            const freeRelaysFromMain = mainCount * 2;
+            const extraDoors = Math.max(0, standardSideCount - freeRelaysFromMain);
+            const extraHubs = Math.ceil(extraDoors / 3) + isolatedCount;
+            
+            const totalDefigoPorts = (mainCount * 3) + (extraHubs * 3);
+            const usedDefigoPorts = mainCount + standardSideCount + isolatedCount;
+            const remainingFree = totalDefigoPorts - usedDefigoPorts;
+
+            // Suprema Readers
+            const srSlimCount = state.nodes.filter(n => n.type === 'sr_slim').length;
+            const srStdCount = state.nodes.filter(n => n.type === 'sr_std').length;
+            const srPinCount = state.nodes.filter(n => n.type === 'sr_pin').length;
+            const totalSrCount = srSlimCount + srStdCount + srPinCount;
+            
+            // Suprema Secure I/O
+            const ioModuleCount = state.nodes.filter(n => n.type.startsWith('sr_') && n.isolated).length;
+
+            // Suprema Network (Switch logic)
+            let poeInjectors = 0, switch8 = 0, switch24 = 0, switch48 = 0, modems = 0;
+            if(totalSrCount > 0) {
+                modems = 1;
+                if(totalSrCount === 1) poeInjectors = 1;
+                else if (totalSrCount <= 7) switch8 = 1;
+                else if (totalSrCount <= 23) switch24 = 1;
+                else switch48 = Math.ceil(totalSrCount / 47);
+            }
+
+            // Calculation (Hardware)
+            const hwMainCost = mainCount * pModel.bundle;
+            const hwHubCost = extraHubs * pModel.extraHub;
+            const addonTotal = (state.addons.inWall * shared.inWall) + (state.addons.secuFrame * shared.secuFrame) + (state.addons.intercom * shared.intercom) + (state.addons.keyfobs * shared.keyfobs);
+            
+            const srCost = (srSlimCount * shared.srSlim) + (srStdCount * shared.srStandard) + (srPinCount * shared.srPin);
+            
+            const activeModemCost = state.network === '4g' ? (modems * shared.modem) : 0;
+            const srNetworkCost = (poeInjectors * shared.poeInjector) + (switch8 * shared.switch8) + (switch24 * shared.switch24) + (switch48 * shared.switch48) + activeModemCost + (ioModuleCount * shared.ioModule);
+
+            const grandTotal = hwMainCost + hwHubCost + addonTotal + srCost + srNetworkCost;
+            
+            // Flex Addons & Pricing Logic
+            const isResidential = (state.btype === 'Bolig' || state.btype === 'Studenthjem');
+            const flexAccessPrice = isResidential ? 25 : 79;
+            const flexSecurityPrice = 149;
+            const flexAdminPrice = 99;
+            const totalDoorsAll = mainCount + standardSideCount + isolatedCount + totalSrCount;
+
+            let licenseTotal = 0;
+            let billableExtraDoors = standardSideCount + isolatedCount + totalSrCount;
+            
+            if(isCore) {
+                licenseTotal = (mainCount * pModel.saasBase) + (billableExtraDoors * pModel.saasExtraDoor);
+            } else {
+                // Flex Start is 0 kr, add selected packages
+                licenseTotal = 0;
+                if (state.flexAddons.access) licenseTotal += (state.tenantCount * flexAccessPrice);
+                if (state.flexAddons.security) licenseTotal += (totalDoorsAll * flexSecurityPrice);
+                if (state.flexAddons.admin) licenseTotal += (totalDoorsAll * flexAdminPrice);
+            }
+            
+            let total4GUnits = 0;
+            if(state.network === '4g') {
+                total4GUnits = mainCount + extraHubs + modems;
+                licenseTotal += (total4GUnits * shared.saas4G);
+            }
+
+            // UPDATE STEP 2 UI for Flex Addons
+            const btnAccess = document.getElementById('btn-flex-access');
+            const btnSecurity = document.getElementById('btn-flex-security');
+            const btnAdmin = document.getElementById('btn-flex-admin');
+            const iconCheckAccess = document.getElementById('icon-check-access');
+            const iconCheckSecurity = document.getElementById('icon-check-security');
+            const iconCheckAdmin = document.getElementById('icon-check-admin');
+            
+            const lblAccessPrice = document.getElementById('lbl-flex-access-price');
+            const lblSecurityPrice = document.getElementById('lbl-flex-security-price');
+            const lblAdminPrice = document.getElementById('lbl-flex-admin-price');
+            
+            const badgeCore = document.getElementById('flex-badge-core');
+            const badgeFlex = document.getElementById('flex-badge-flex');
+
+            if (isCore) {
+                if (lblAccessPrice) lblAccessPrice.innerHTML = `<span class="text-[#5CD67A]">Inkludert</span>`;
+                if (lblSecurityPrice) lblSecurityPrice.innerHTML = `<span class="text-[#5CD67A]">Inkludert</span>`;
+                if (lblAdminPrice) lblAdminPrice.innerHTML = `<span class="text-[#5CD67A]">Inkludert</span>`;
+            } else {
+                if (lblAccessPrice) {
+                    lblAccessPrice.innerHTML = `${formatPrice(flexAccessPrice)} kr <span class="text-[10px] text-gray-500 font-normal">/enhet</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Totalt: ${formatPrice(state.tenantCount * flexAccessPrice)} kr/mnd</div>`;
+                }
+                if (lblSecurityPrice) {
+                    lblSecurityPrice.innerHTML = `${flexSecurityPrice} kr <span class="text-[10px] text-gray-500 font-normal">/dør</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Totalt: ${formatPrice(totalDoorsAll * flexSecurityPrice)} kr/mnd</div>`;
+                }
+                if (lblAdminPrice) {
+                    lblAdminPrice.innerHTML = `${flexAdminPrice} kr <span class="text-[10px] text-gray-500 font-normal">/dør</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Totalt: ${formatPrice(totalDoorsAll * flexAdminPrice)} kr/mnd</div>`;
+                }
+            }
+
+            // Function to update button visually
+            const updateFlexBtnUI = (btn, icon, isActive, forceCoreLock) => {
+                if (!btn || !icon) return;
+                if (forceCoreLock) {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-[#5CD67A]/5 border-[#5CD67A]/40 cursor-default transition-all opacity-100";
+                    icon.className = "w-6 h-6 rounded-full bg-[#5CD67A] flex items-center justify-center text-white";
+                } else if (isActive) {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-white border-[#00134D] shadow-lg cursor-pointer transform scale-[1.02] transition-all";
+                    icon.className = "w-6 h-6 rounded-full bg-[#00134D] flex items-center justify-center text-white";
+                } else {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] cursor-pointer transition-all";
+                    icon.className = "w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent";
+                }
+            };
+
+            updateFlexBtnUI(btnAccess, iconCheckAccess, state.flexAddons.access, isCore);
+            updateFlexBtnUI(btnSecurity, iconCheckSecurity, state.flexAddons.security, isCore);
+            updateFlexBtnUI(btnAdmin, iconCheckAdmin, state.flexAddons.admin, isCore);
+
+            if (badgeCore && badgeFlex) {
+                if (isCore) {
+                    badgeCore.classList.remove('hidden'); badgeFlex.classList.add('hidden');
+                } else {
+                    badgeCore.classList.add('hidden'); badgeFlex.classList.remove('hidden');
+                }
+            }
+
+
+            // Update UI Labels
+            const bomFreeRelays = document.getElementById('bom-free-relays');
+            const bomTotalCapex = document.getElementById('bom-total-capex');
+            const mobBarPrice = document.getElementById('mobile-bar-price');
+            const bomTotalLicense = document.getElementById('bom-total-license');
+
+            if (bomFreeRelays) bomFreeRelays.innerText = remainingFree;
+            if (bomTotalCapex) bomTotalCapex.innerText = formatPrice(grandTotal) + ' kr';
+            if (mobBarPrice) mobBarPrice.innerText = formatPrice(grandTotal) + ' kr';
+            if (bomTotalLicense) bomTotalLicense.innerText = formatPrice(licenseTotal) + ' kr/mnd';
+
+            // --- Per-unit cost logic ---
+            let perUnitText = "";
+            if (licenseTotal > 0 && state.tenantCount > 0) {
+                let tenantTypeStr = "lokale";
+                if (state.btype === 'Bolig' || state.btype === 'Studenthjem') tenantTypeStr = "leilighet";
+                else if (state.btype === 'Kontor' || state.btype === 'Co-working') tenantTypeStr = "kontor";
+                else if (state.btype === 'Hotell') tenantTypeStr = "hotellrom";
+
+                const perUnit = Math.round(licenseTotal / state.tenantCount);
+                perUnitText = `Tilsvarer ca. ${formatPrice(perUnit)} kr pr. ${tenantTypeStr}`;
+            }
+
+            const bomPerUnitCost = document.getElementById('bom-per-unit-cost');
+            const receiptPerUnitCost = document.getElementById('receipt-per-unit-cost');
+
+            if (perUnitText) {
+                if (bomPerUnitCost) {
+                    bomPerUnitCost.innerText = perUnitText;
+                    bomPerUnitCost.classList.remove('hidden');
+                    bomPerUnitCost.classList.add('block');
+                }
+                if (receiptPerUnitCost) {
+                    receiptPerUnitCost.innerText = perUnitText;
+                    receiptPerUnitCost.classList.remove('hidden');
+                    receiptPerUnitCost.classList.add('block');
+                }
+            } else {
+                if (bomPerUnitCost) {
+                    bomPerUnitCost.classList.add('hidden');
+                    bomPerUnitCost.classList.remove('block');
+                }
+                if (receiptPerUnitCost) {
+                    receiptPerUnitCost.classList.add('hidden');
+                    receiptPerUnitCost.classList.remove('block');
+                }
+            }
+
+            // License Breakdown HTML Generation
+            let breakdownHTML = '';
+            if (isCore && mainCount > 0) {
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>${mainCount}x Core System-lisens</span><span>${formatPrice(mainCount * pModel.saasBase)} kr</span></div>`;
+            }
+            if (isCore && billableExtraDoors > 0) {
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>${billableExtraDoors}x Ekstra dørmiljøer</span><span>${formatPrice(billableExtraDoors * pModel.saasExtraDoor)} kr</span></div>`;
+            }
+            if (state.network === '4g' && total4GUnits > 0) {
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>${total4GUnits}x 4G/LTE-abonnement</span><span>${formatPrice(total4GUnits * shared.saas4G)} kr</span></div>`;
+            }
+            
+            // Flex breakdown
+            if (!isCore) {
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>Flex Start-lisens</span><span>0 kr</span></div>`;
+                if (state.flexAddons.access) {
+                    breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>Access & Intercom (${state.tenantCount}x)</span><span>${formatPrice(state.tenantCount * flexAccessPrice)} kr</span></div>`;
+                }
+                if (state.flexAddons.security) {
+                    breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>Security Services (${totalDoorsAll}x)</span><span>${formatPrice(totalDoorsAll * flexSecurityPrice)} kr</span></div>`;
+                }
+                if (state.flexAddons.admin) {
+                    breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800/90 font-medium"><span>Admin & Control (${totalDoorsAll}x)</span><span>${formatPrice(totalDoorsAll * flexAdminPrice)} kr</span></div>`;
+                }
+            }
+            
+            const bomLicenseBreakdown = document.getElementById('bom-license-breakdown');
+            if (bomLicenseBreakdown) {
+                if (breakdownHTML !== '') {
+                    bomLicenseBreakdown.innerHTML = breakdownHTML;
+                    bomLicenseBreakdown.classList.remove('hidden');
+                } else {
+                    bomLicenseBreakdown.classList.add('hidden');
+                }
+            }
+            
+            const receiptLicenseBreakdown = document.getElementById('receipt-license-breakdown');
+            if (receiptLicenseBreakdown) {
+                 if (breakdownHTML !== '') {
+                    receiptLicenseBreakdown.innerHTML = breakdownHTML;
+                    receiptLicenseBreakdown.classList.remove('hidden');
+                } else {
+                    receiptLicenseBreakdown.classList.add('hidden');
+                }
+            }
+
+            // Build List
+            const list = document.getElementById('bom-list');
+            if (list) {
+                list.innerHTML = '';
+                // Defigo Hardware
+                if(mainCount > 0) list.innerHTML += `<li class="flex justify-between items-start"><div class="flex-1"><span class="font-bold text-[#00134D] block">${mainCount}x Display Unit (Defigo)</span><span class="text-[10px] text-gray-500 font-normal block mt-0.5">Inkluderer ${mainCount}x Relay Hub (Sentral)</span></div><span class="font-bold text-[#00134D]">${formatPrice(hwMainCost)} kr</span></li>`;
+                if((standardSideCount + isolatedCount) > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2"><div class="flex-1"><span class="font-bold text-[#00134D] block">${standardSideCount + isolatedCount}x Indre dører (Mobil)</span></div><span class="font-bold text-[#5CD67A]">0 kr</span></li>`;
+                if(extraHubs > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-[#A8C0F0]"><div class="flex-1"><span class="font-bold block text-[#00134D]">+ ${extraHubs}x Ekstra Relay Hub</span></div><span class="font-bold text-[#00134D]">${formatPrice(hwHubCost)} kr</span></li>`;
+                
+                // Suprema Hardware
+                if(srSlimCount > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 border-t border-[#A8C0F0]/30 mt-2"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srSlimCount}x Leser Slim</span></div><span class="font-bold text-[#00134D]">${formatPrice(srSlimCount * shared.srSlim)} kr</span></li>`;
+                if(srStdCount > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 ${srSlimCount === 0 ? 'border-t border-[#A8C0F0]/30 mt-2' : ''}"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srStdCount}x Leser Std</span></div><span class="font-bold text-[#00134D]">${formatPrice(srStdCount * shared.srStandard)} kr</span></li>`;
+                if(srPinCount > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 ${srSlimCount === 0 && srStdCount === 0 ? 'border-t border-[#A8C0F0]/30 mt-2' : ''}"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srPinCount}x Leser m/PIN</span></div><span class="font-bold text-[#00134D]">${formatPrice(srPinCount * shared.srPin)} kr</span></li>`;
+                
+                if(ioModuleCount > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${ioModuleCount}x Secure I/O Modul</span></div><span class="font-bold">${formatPrice(ioModuleCount * shared.ioModule)} kr</span></li>`;
+                
+                // Note: 4G subscription is now moved to License Breakdown, so it is no longer shown here to prevent mix-ups.
+                if(modems > 0) {
+                    if (state.network === '4g') {
+                        list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${modems}x Modem (Suprema nett)</span></div><span class="font-bold">${formatPrice(modems * shared.modem)} kr</span></li>`;
+                    } else {
+                        list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-400 opacity-60"><div class="flex-1"><span class="font-bold block line-through">+ ${modems}x Modem (Suprema nett)</span></div><span class="font-bold">0 kr</span></li>`;
+                    }
+                }
+                
+                if(poeInjectors > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${poeInjectors}x PoE-injektor</span></div><span class="font-bold">${formatPrice(poeInjectors * shared.poeInjector)} kr</span></li>`;
+                if(switch8 > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${switch8}x 8-ports Switch</span></div><span class="font-bold">${formatPrice(switch8 * shared.switch8)} kr</span></li>`;
+                if(switch24 > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${switch24}x 24-ports Switch</span></div><span class="font-bold">${formatPrice(switch24 * shared.switch24)} kr</span></li>`;
+                if(switch48 > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${switch48}x 48-ports Switch</span></div><span class="font-bold">${formatPrice(switch48 * shared.switch48)} kr</span></li>`;
+
+                // Addons
+                if(state.addons.inWall > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2 border-t border-[#A8C0F0]/30 mt-2"><span>${state.addons.inWall}x Innfellingsboks</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.inWall * shared.inWall)} kr</span></li>`;
+                if(state.addons.secuFrame > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.secuFrame}x SecuFrame</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.secuFrame * shared.secuFrame)} kr</span></li>`;
+                if(state.addons.intercom > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.intercom}x Svarapparat</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.intercom * shared.intercom)} kr</span></li>`;
+                if(state.addons.keyfobs > 0) list.innerHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.keyfobs}x Nøkkelbrikker (10p)</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.keyfobs * shared.keyfobs)} kr</span></li>`;
+            }
+
+            const nextBtn = document.getElementById('btn-next-from-bom');
+            const mobBar = document.getElementById('mobile-bottom-bar');
+            const mobBarNextBtn = document.getElementById('mob-btn-next');
+            
+            if(state.step > 0 && state.nodes.length > 0 && state.step < 4) {
+                if(nextBtn) {
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.innerHTML = state.step === 3 
+                        ? 'Send inn <i data-lucide="send" class="w-4 h-4"></i>' 
+                        : 'Fortsett <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+                }
+                if(mobBar) {
+                    mobBar.classList.remove('translate-y-full');
+                    if (mobBarNextBtn) {
+                        mobBarNextBtn.innerText = state.step === 3 ? 'Send inn' : 'Fortsett';
+                    }
+                }
+            } else {
+                if(nextBtn) nextBtn.classList.add('hidden');
+                if(mobBar) mobBar.classList.add('translate-y-full');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function renderReceipt() {
+            // Already handled the license breakdown rendering inside renderBOM directly 
+            // since renderBOM is called everywhere UI updates, including receipt page.
+            
+            const elCompany = document.getElementById('receipt-company');
+            const elProject = document.getElementById('receipt-project');
+            const elBtype = document.getElementById('receipt-btype');
+            const elPstatus = document.getElementById('receipt-pstatus');
+            const elModel = document.getElementById('receipt-model');
+            const elTenants = document.getElementById('receipt-tenants');
+            const flexDisclaimer = document.getElementById('receipt-flex-disclaimer');
+
+            if (elCompany) elCompany.innerText = state.contact.company || '-';
+            if (elProject) elProject.innerText = state.contact.project || '-';
+            if (elBtype) elBtype.innerText = state.btype || '-';
+            if (elPstatus) elPstatus.innerText = state.pstatus || '-';
+            if (elModel) elModel.innerText = state.pricingModel === 'core' ? 'Defigo Core' : 'Defigo Flex';
+            if (elTenants) elTenants.innerText = state.tenantCount;
+            
+            if (flexDisclaimer) {
+                flexDisclaimer.style.display = state.pricingModel === 'flex' ? 'block' : 'none';
+            }
+        }
+
+        function renderUI() {
+            document.querySelectorAll('.funnel-step').forEach(el => el.classList.remove('active'));
+            const activeStep = document.getElementById(`step-${state.step}`);
+            if(activeStep) activeStep.classList.add('active');
+
+            for(let i=0; i<4; i++) {
+                const nav = document.getElementById(`nav-step-${i}`);
+                if(!nav) continue;
+                if(i < state.step) {
+                    nav.innerHTML = `<div class="w-6 h-6 rounded-full bg-[#00134D] text-white flex items-center justify-center text-xs font-bold"><i data-lucide="check" class="w-3 h-3"></i></div><span class="text-xs font-bold uppercase tracking-wide text-[#00134D] hidden md:block">Ferdig</span>`;
+                } else if(i === state.step) {
+                    nav.innerHTML = `<div class="w-6 h-6 rounded-full border-2 border-[#5CD67A] bg-emerald-50 text-[#5CD67A] flex items-center justify-center text-xs font-bold">${i+1}</div><span class="text-xs font-bold uppercase tracking-wide text-[#5CD67A] hidden md:block">Pågår</span>`;
+                } else {
+                    nav.innerHTML = `<div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">${i+1}</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400 hidden md:block">Venter</span>`;
+                }
+            }
+
+            const sidebar = document.getElementById('bom-sidebar');
+            if(sidebar) {
+                if(state.step === 0 || state.step === 4) {
+                    sidebar.classList.add('translate-x-full'); sidebar.classList.remove('lg:translate-x-0');
+                } else {
+                    sidebar.classList.remove('translate-x-full'); sidebar.classList.add('lg:translate-x-0');
+                }
+            }
+
+            if(state.step === 4) renderReceipt();
+
+            lucide.createIcons();
+            updateStaticPrices();
+            renderBOM();
+        }
+
+        function handleBomNext() {
+            if (state.step === 3) {
+                handleCheckout();
+            } else {
+                nextStep();
+            }
+        }
+
+        function toggleFab() {
+            const menu = document.getElementById('fab-menu');
+            const icon = document.getElementById('fab-icon');
+            if(menu && menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                void menu.offsetWidth;
+                menu.classList.remove('scale-95', 'opacity-0');
+                menu.classList.add('scale-100', 'opacity-100');
+                if (icon) icon.classList.add('rotate-45');
+            } else if (menu) {
+                menu.classList.remove('scale-100', 'opacity-100');
+                menu.classList.add('scale-95', 'opacity-0');
+                if (icon) icon.classList.remove('rotate-45');
+                setTimeout(() => { menu.classList.add('hidden'); }, 300);
+            }
+        }
+
+        // Initialize
+        lucide.createIcons();
+        updateStaticPrices();
+        renderUI();
+
+    </script>
+</body>
+</html>
